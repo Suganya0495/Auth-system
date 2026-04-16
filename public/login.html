@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Auth System</title>
+
+<style>
+body {
+    font-family: Arial;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.card {
+    width: 350px;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+input {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+button {
+    width: 95%;
+    padding: 10px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.register {
+    background: #4CAF50;
+    color: white;
+}
+
+.login {
+    background: #2196F3;
+    color: white;
+}
+
+.dashboard {
+    background: #ff9800;
+    color: white;
+}
+
+.logout {
+    background: #f44336;
+    color: white;
+}
+
+#msg {
+    margin-top: 10px;
+    font-weight: bold;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Auth System</h2>
+
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+
+<button class="register" onclick="register()">Register</button>
+<button class="login" onclick="login()">Login</button>
+<button class="dashboard" onclick="dashboard()">Dashboard</button>
+<button class="logout" onclick="logout()">Logout</button>
+
+<p id="msg"></p>
+
+</div>
+
+<script>
+
+function register() {
+    fetch("http://127.0.0.1:8000/api/register/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        })
+    })
+    .then(res => res.json().then(data => {
+        if (!res.ok) {
+            document.getElementById("msg").innerText = data.error || "Registration failed";
+            return;
+        }
+
+        document.getElementById("msg").innerText = data.message;
+    }))
+    .catch(() => {
+        document.getElementById("msg").innerText = "Server error";
+    });
+}
+
+
+function login() {
+    fetch("http://127.0.0.1:8000/api/login/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.access) {
+            localStorage.setItem("access", data.access);
+            msg.innerText = "Login Success";
+        } else {
+            msg.innerText = data.error;
+        }
+    });
+}
+
+
+function dashboard() {
+    fetch("http://127.0.0.1:8000/api/dashboard/", {
+        headers: {
+            "Authorization": "Bearer " + localStorage.getItem("access")
+        }
+    })
+    .then(res => res.json())
+    .then(data => msg.innerText = data.message)
+    .catch(() => msg.innerText = "Login required");
+}
+
+
+function logout() {
+    localStorage.removeItem("access");
+    msg.innerText = "Logged out";
+}
+
+</script>
+
+</body>
+</html>
